@@ -39,7 +39,7 @@ export function MetallicEditorial(props: AdTemplateProps): ReactNode {
     square: { hlW: 0.82, hlY: 0.18, scW: 0.72, scY: 0.56, ctaY: 0.78, hlSize: 52, scSize: 21, hlLines: 3 },
     portrait: { hlW: 0.82, hlY: 0.2, scW: 0.72, scY: 0.58, ctaY: 0.78, hlSize: 52, scSize: 22, hlLines: 3 },
     story: { hlW: 0.8, hlY: 0.28, scW: 0.75, scY: 0.58, ctaY: 0.74, hlSize: 56, scSize: 22, hlLines: 4 },
-    landscape: { hlW: 0.5, hlY: 0.16, scW: 0.45, scY: 0.55, ctaY: 0.78, hlSize: 40, scSize: 17, hlLines: 2 },
+    landscape: { hlW: 0.48, hlY: 0.14, scW: 0.44, scY: 0.52, ctaY: 0.76, hlSize: 38, scSize: 16, hlLines: 2 },
   }[ratio];
 
   const hlMaxW = Math.round(width * layout.hlW);
@@ -52,22 +52,25 @@ export function MetallicEditorial(props: AdTemplateProps): ReactNode {
   const scFit = estimateTextFit(subcopy, scAdj.fontSize, scMaxW, 2);
 
   return (
-    <div style={{ width, height, display: "flex", position: "relative", overflow: "hidden", background: `linear-gradient(140deg, #060B27 0%, #12104A 35%, ${brandPrimary}CC 100%)` }}>
+    <div style={{ width, height, display: "flex", position: "relative", overflow: "hidden", background: `linear-gradient(140deg, #060B27 0%, #0E0D3A 25%, ${brandPrimary}AA 65%, #7C3AED66 100%)` }}>
       {backgroundImageUrl && (
         <img src={backgroundImageUrl} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.2 }} />
       )}
 
-      {/* Abstract orb — top-right */}
-      <div style={{ position: "absolute", top: Math.round(-height * 0.25), right: Math.round(-width * 0.12), width: Math.round(width * 0.85), height: Math.round(width * 0.85), borderRadius: "50%", background: `linear-gradient(160deg, ${brandPrimary}55 0%, ${brandPrimary}00 70%)` }} />
+      {/* Large metallic orb — top-right, strong specular highlight */}
+      <div style={{ position: "absolute", top: Math.round(-height * 0.2), right: Math.round(-width * 0.1), width: Math.round(width * 0.9), height: Math.round(width * 0.9), borderRadius: "50%", background: `linear-gradient(160deg, ${brandPrimary}66 0%, rgba(255,255,255,0.06) 40%, ${brandPrimary}00 70%)` }} />
 
-      {/* Abstract orb — bottom-left, subtle */}
-      <div style={{ position: "absolute", bottom: Math.round(-height * 0.2), left: Math.round(-width * 0.18), width: Math.round(width * 0.65), height: Math.round(width * 0.65), borderRadius: "50%", background: `linear-gradient(20deg, #6C2BD944 0%, #6C2BD900 100%)` }} />
+      {/* Secondary orb — bottom-left, purple undertone */}
+      <div style={{ position: "absolute", bottom: Math.round(-height * 0.18), left: Math.round(-width * 0.15), width: Math.round(width * 0.7), height: Math.round(width * 0.7), borderRadius: "50%", background: `linear-gradient(20deg, #7C3AED55 0%, #7C3AED00 100%)` }} />
 
-      {/* Small warm accent orb */}
-      <div style={{ position: "absolute", top: Math.round(height * 0.12), right: Math.round(width * 0.06), width: Math.round(width * 0.28), height: Math.round(width * 0.28), borderRadius: "50%", background: `linear-gradient(180deg, ${brandAccent}18 0%, ${brandAccent}00 100%)` }} />
+      {/* Warm accent orb — subtle metallic sheen */}
+      <div style={{ position: "absolute", top: Math.round(height * 0.1), right: Math.round(width * 0.04), width: Math.round(width * 0.32), height: Math.round(width * 0.32), borderRadius: "50%", background: `linear-gradient(180deg, ${brandAccent}28 0%, rgba(255,255,255,0.04) 50%, ${brandAccent}00 100%)` }} />
+
+      {/* Small highlight orb — simulates light reflection */}
+      <div style={{ position: "absolute", top: Math.round(height * 0.35), right: Math.round(width * 0.25), width: Math.round(width * 0.18), height: Math.round(width * 0.18), borderRadius: "50%", background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 100%)" }} />
 
       {/* Top-to-bottom veil */}
-      <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", background: "linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.18) 100%)" }} />
+      <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", background: "linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0) 25%, rgba(0,0,0,0.22) 100%)" }} />
 
       {/* Logo */}
       {brand.logoUrl && (

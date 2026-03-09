@@ -18,13 +18,12 @@ function detectRatio(w: number, h: number): Ratio {
  *
  * Composition: Two-tone split layout with a strong geometric divide.
  * One zone is a solid brand-colored block with text; the other is a
- * dark gradient for visual contrast. Completely different structure
- * from the editorial style.
+ * dark gradient for visual contrast.
  *
  * Ratio adaptations:
  * - Square:     Vertical split — left 48% brand block (text), right 52% dark gradient
- * - Portrait:   Horizontal split — top 55% dark gradient, bottom 45% brand block (text)
- * - Story:      Top 45% dark, accent bar, bottom 55% brand block
+ * - Portrait:   Vertical split — left 52% brand block (text), right 48% dark, using height
+ * - Story:      Top 42% dark, accent bar, bottom 58% brand block
  * - Landscape:  Left 42% brand block, right 58% dark gradient, text on left
  */
 export function BoldSplit(props: AdTemplateProps): ReactNode {
@@ -43,13 +42,13 @@ export function BoldSplit(props: AdTemplateProps): ReactNode {
       hlSize: 42, scSize: 18, hlLines: 3,
     },
     portrait: {
-      splitDir: "horizontal" as const, splitPos: 0.55,
-      textPad: 0.06, hlW: 0.8, hlY: 0.6, scW: 0.75, scY: 0.78, ctaY: 0.9,
-      hlSize: 44, scSize: 19, hlLines: 2,
+      splitDir: "vertical" as const, splitPos: 0.52,
+      textPad: 0.05, hlW: 0.42, hlY: 0.2, scW: 0.42, scY: 0.48, ctaY: 0.72,
+      hlSize: 46, scSize: 19, hlLines: 3,
     },
     story: {
-      splitDir: "horizontal" as const, splitPos: 0.45,
-      textPad: 0.07, hlW: 0.78, hlY: 0.52, scW: 0.72, scY: 0.7, ctaY: 0.82,
+      splitDir: "horizontal" as const, splitPos: 0.42,
+      textPad: 0.07, hlW: 0.78, hlY: 0.48, scW: 0.72, scY: 0.66, ctaY: 0.8,
       hlSize: 50, scSize: 20, hlLines: 3,
     },
     landscape: {
