@@ -97,8 +97,8 @@ export function GlassCard(props: AdTemplateProps): ReactNode {
         width: cardW, height: cardH,
         display: "flex", flexDirection: "column", justifyContent: "center",
         borderRadius: s(20),
-        background: "rgba(255,255,255,0.18)",
-        border: "2px solid rgba(255,255,255,0.35)",
+        background: "rgba(10,15,40,0.55)",
+        border: "2px solid rgba(255,255,255,0.40)",
         padding: cardPad,
       }}>
         {/* Headline inside card */}
