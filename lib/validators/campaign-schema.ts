@@ -10,6 +10,7 @@ export const generateCreativesSchema = z.object({
     targetAudience: z.string().max(300).optional(),
     badgeText: z.string().max(30).optional(),
     backgroundImageUrl: z.string().url().nullish(),
+    selectedFamilyId: z.string().optional(),
   }),
   platforms: z.array(z.string().min(1)).min(1),
   copyVariants: z.number().int().min(1).max(5).default(3),

@@ -53,15 +53,35 @@ model PlatformPreset {
   assets      CreativeAsset[]
 }
 
+model TemplateFamily {
+  id                    String   @id @default(cuid())
+  name                  String
+  slug                  String   @unique
+  description           String?
+  previewBgCss          String?
+  recommendedCategories String[]
+  supportedRatios       String[]
+  generateMode          String   @default("single")
+  sortOrder             Int      @default(0)
+  isActive              Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  variants              TemplateDefinition[]
+  campaigns             Campaign[]
+}
+
 model TemplateDefinition {
-  id                String   @id @default(cuid())
+  id                String          @id @default(cuid())
   name              String
   templateGroup     String
   compatiblePresets String[]
   layers            Json
   thumbnail         String?
-  isActive          Boolean  @default(true)
-  createdAt         DateTime @default(now())
+  isActive          Boolean         @default(true)
+  createdAt         DateTime        @default(now())
+  familyId          String?
+  family            TemplateFamily? @relation(fields: [familyId], references: [id])
+  variantIndex      Int             @default(0)
+  isDefault         Boolean         @default(true)
   assets            CreativeAsset[]
 }
 
@@ -78,6 +98,8 @@ model Campaign {
   badgeText          String?
   backgroundImageUrl String?
   selectedPresets    String[]
+  selectedFamilyId   String?
+  selectedFamily     TemplateFamily?  @relation(fields: [selectedFamilyId], references: [id])
   status             String        @default("draft")
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt

@@ -304,9 +304,125 @@ async function main() {
     console.log(`Preset: ${preset.label}`);
   }
 
+  // --- Template Families ---
+  const families = [
+    {
+      id: "fam_metallic_editorial",
+      name: "Metallic Editorial",
+      slug: "metallic-editorial",
+      description: "Deep blue-indigo gradient with abstract light shapes and bold editorial typography. Premium and authoritative.",
+      previewBgCss: "linear-gradient(140deg, #060B27 0%, #12104A 35%, #2563EB 100%)",
+      recommendedCategories: ["B2B SaaS", "AI Solution", "Enterprise"],
+      supportedRatios: ["1:1", "4:5", "9:16", "1.91:1"],
+      generateMode: "single",
+      sortOrder: 1,
+      isActive: true,
+    },
+    {
+      id: "fam_bold_split",
+      name: "Bold Split",
+      slug: "bold-split",
+      description: "Two-tone split composition with strong geometric divider. High contrast, confident, modern.",
+      previewBgCss: "linear-gradient(135deg, #2563EB 0%, #1E40AF 48%, #0F0F23 48%, #1a1040 100%)",
+      recommendedCategories: ["Education", "Ecommerce", "Fintech"],
+      supportedRatios: ["1:1", "4:5", "9:16", "1.91:1"],
+      generateMode: "single",
+      sortOrder: 2,
+      isActive: true,
+    },
+    {
+      id: "fam_glass_card",
+      name: "Glass Card",
+      slug: "glass-card",
+      description: "Vibrant mesh-gradient canvas with translucent card containing text. App-like, modern, refined.",
+      previewBgCss: "linear-gradient(135deg, #0F172A 0%, #2563EB88 40%, #7C3AED66 70%, #F59E0B44 100%)",
+      recommendedCategories: ["Beauty", "Lifestyle", "SaaS"],
+      supportedRatios: ["1:1", "4:5", "9:16", "1.91:1"],
+      generateMode: "single",
+      sortOrder: 3,
+      isActive: true,
+    },
+  ];
+
+  for (const fam of families) {
+    await prisma.templateFamily.upsert({
+      where: { id: fam.id },
+      update: fam,
+      create: fam,
+    });
+    console.log(`Family: ${fam.name}`);
+  }
+
   // --- Template Definitions ---
   const templates = [
-    // --- Premium templates (new, high-quality visual rendering) ---
+    // --- Style family templates (ratio-aware rendering) ---
+    {
+      id: "tmpl_metallic_editorial",
+      name: "Metallic Editorial",
+      templateGroup: "metallic-editorial",
+      familyId: "fam_metallic_editorial",
+      variantIndex: 0,
+      isDefault: true,
+      compatiblePresets: [
+        "preset_meta_square",
+        "preset_meta_portrait",
+        "preset_meta_story",
+        "preset_linkedin_square",
+        "preset_linkedin_landscape",
+      ],
+      layers: [
+        { type: "background_image", source: "dynamic", fit: "cover", fallback_color: "#060B27" },
+        { type: "background_overlay", color: "#000000", opacity: 0.0 },
+        { type: "headline", font_size: 52, font_weight: 800, color: "#FFFFFF", text_align: "left" },
+        { type: "subcopy", font_size: 21, font_weight: 400, color: "rgba(255,255,255,0.7)", text_align: "left" },
+        { type: "cta_button", background_color: "brand.primaryColor", text_color: "#FFFFFF", font_size: 17, border_radius: 10 },
+      ],
+    },
+    {
+      id: "tmpl_bold_split",
+      name: "Bold Split",
+      templateGroup: "bold-split",
+      familyId: "fam_bold_split",
+      variantIndex: 0,
+      isDefault: true,
+      compatiblePresets: [
+        "preset_meta_square",
+        "preset_meta_portrait",
+        "preset_meta_story",
+        "preset_linkedin_square",
+        "preset_linkedin_landscape",
+      ],
+      layers: [
+        { type: "background_image", source: "dynamic", fit: "cover", fallback_color: "#0A0A14" },
+        { type: "background_overlay", color: "#000000", opacity: 0.0 },
+        { type: "headline", font_size: 42, font_weight: 800, color: "#FFFFFF", text_align: "left" },
+        { type: "subcopy", font_size: 18, font_weight: 400, color: "rgba(255,255,255,0.85)", text_align: "left" },
+        { type: "cta_button", background_color: "#FFFFFF", text_color: "brand.primaryColor", font_size: 16, border_radius: 8 },
+      ],
+    },
+    {
+      id: "tmpl_glass_card",
+      name: "Glass Card",
+      templateGroup: "glass-card",
+      familyId: "fam_glass_card",
+      variantIndex: 0,
+      isDefault: true,
+      compatiblePresets: [
+        "preset_meta_square",
+        "preset_meta_portrait",
+        "preset_meta_story",
+        "preset_linkedin_square",
+        "preset_linkedin_landscape",
+      ],
+      layers: [
+        { type: "background_image", source: "dynamic", fit: "cover", fallback_color: "#0F172A" },
+        { type: "background_overlay", color: "#000000", opacity: 0.0 },
+        { type: "headline", font_size: 40, font_weight: 700, color: "#FFFFFF", text_align: "left" },
+        { type: "subcopy", font_size: 18, font_weight: 400, color: "rgba(255,255,255,0.68)", text_align: "left" },
+        { type: "cta_button", background_color: "brand.primaryColor", text_color: "#FFFFFF", font_size: 16, border_radius: 10 },
+      ],
+    },
+    // --- Legacy category-specific templates ---
     {
       id: "tmpl_premium_gradient",
       name: "Premium Gradient",
@@ -695,10 +811,20 @@ async function main() {
   ];
 
   for (const tmpl of templates) {
+    const data = {
+      id: tmpl.id,
+      name: tmpl.name,
+      templateGroup: tmpl.templateGroup,
+      compatiblePresets: tmpl.compatiblePresets,
+      layers: tmpl.layers,
+      familyId: (tmpl as Record<string, unknown>).familyId as string | undefined,
+      variantIndex: (tmpl as Record<string, unknown>).variantIndex as number | undefined ?? 0,
+      isDefault: (tmpl as Record<string, unknown>).isDefault as boolean | undefined ?? true,
+    };
     await prisma.templateDefinition.upsert({
       where: { id: tmpl.id },
-      update: tmpl,
-      create: tmpl,
+      update: data,
+      create: data,
     });
     console.log(`Template: ${tmpl.name}`);
   }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Sparkles, Check } from "lucide-react";
+import { Loader2, Sparkles, Check, Palette } from "lucide-react";
 
 interface Brand {
   id: string;
@@ -25,13 +25,27 @@ interface Preset {
   aspectRatio: string;
 }
 
+interface TemplateFamily {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  previewBgCss: string | null;
+  recommendedCategories: string[];
+  supportedRatios: string[];
+  generateMode: string;
+}
+
 interface Props {
   brands: Brand[];
   categories: Category[];
   presets: Preset[];
+  families: TemplateFamily[];
 }
 
-export function CampaignForm({ brands, categories, presets }: Props) {
+const STEPS = ["Brand & Category", "Product Info", "Platforms", "Creative Style", "Generate"];
+
+export function CampaignForm({ brands, categories, presets, families }: Props) {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -47,6 +61,7 @@ export function CampaignForm({ brands, categories, presets }: Props) {
     badgeText: "",
     backgroundImageUrl: "",
     selectedPresets: presets.map((p) => p.id),
+    selectedFamilyId: families[0]?.id || "",
     copyVariants: 3,
   });
 
@@ -67,6 +82,7 @@ export function CampaignForm({ brands, categories, presets }: Props) {
     if (step === 1) return form.brandId && form.categoryId;
     if (step === 2) return form.name && form.productName;
     if (step === 3) return form.selectedPresets.length > 0;
+    if (step === 4) return !!form.selectedFamilyId;
     return true;
   };
 
@@ -88,6 +104,7 @@ export function CampaignForm({ brands, categories, presets }: Props) {
             targetAudience: form.targetAudience || undefined,
             badgeText: form.badgeText || undefined,
             backgroundImageUrl: form.backgroundImageUrl || undefined,
+            selectedFamilyId: form.selectedFamilyId || undefined,
           },
           platforms: form.selectedPresets,
           copyVariants: form.copyVariants,
@@ -117,37 +134,35 @@ export function CampaignForm({ brands, categories, presets }: Props) {
     {} as Record<string, Preset[]>
   );
 
+  const selectedCategoryName = categories.find((c) => c.id === form.categoryId)?.name || "";
+  const selectedFamily = families.find((f) => f.id === form.selectedFamilyId);
+
   return (
     <div className="mx-auto max-w-2xl">
       {/* Steps indicator */}
       <div className="mb-8 flex items-center gap-2">
-        {[1, 2, 3, 4].map((s) => (
-          <div key={s} className="flex items-center gap-2">
-            <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
-                s === step
-                  ? "bg-blue-600 text-white"
-                  : s < step
-                    ? "bg-emerald-600 text-white"
-                    : "bg-zinc-800 text-zinc-500"
-              }`}
-            >
-              {s < step ? <Check className="h-4 w-4" /> : s}
-            </div>
-            {s < 4 && (
+        {STEPS.map((label, i) => {
+          const s = i + 1;
+          return (
+            <div key={s} className="flex items-center gap-2">
               <div
-                className={`h-0.5 w-8 ${s < step ? "bg-emerald-600" : "bg-zinc-800"}`}
-              />
-            )}
-          </div>
-        ))}
-        <span className="ml-3 text-sm text-zinc-400">
-          {
-            ["Brand & Category", "Product Info", "Platforms", "Generate"][
-              step - 1
-            ]
-          }
-        </span>
+                className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
+                  s === step
+                    ? "bg-blue-600 text-white"
+                    : s < step
+                      ? "bg-emerald-600 text-white"
+                      : "bg-zinc-800 text-zinc-500"
+                }`}
+              >
+                {s < step ? <Check className="h-4 w-4" /> : s}
+              </div>
+              {i < STEPS.length - 1 && (
+                <div className={`h-0.5 w-6 ${s < step ? "bg-emerald-600" : "bg-zinc-800"}`} />
+              )}
+            </div>
+          );
+        })}
+        <span className="ml-3 text-sm text-zinc-400">{STEPS[step - 1]}</span>
       </div>
 
       {/* Step 1: Brand & Category */}
@@ -160,9 +175,7 @@ export function CampaignForm({ brands, categories, presets }: Props) {
               className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
             >
               {brands.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
+                <option key={b.id} value={b.id}>{b.name}</option>
               ))}
             </select>
           </FieldGroup>
@@ -248,9 +261,7 @@ export function CampaignForm({ brands, categories, presets }: Props) {
                 className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
               >
                 {[1, 2, 3, 4, 5].map((n) => (
-                  <option key={n} value={n}>
-                    {n} variant{n > 1 ? "s" : ""}
-                  </option>
+                  <option key={n} value={n}>{n} variant{n > 1 ? "s" : ""}</option>
                 ))}
               </select>
             </FieldGroup>
@@ -261,7 +272,7 @@ export function CampaignForm({ brands, categories, presets }: Props) {
               type="url"
               value={form.backgroundImageUrl}
               onChange={(e) => update("backgroundImageUrl", e.target.value)}
-              placeholder="https://... (leave empty for AI prompt)"
+              placeholder="https://... (leave empty for generated background)"
               className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
             />
           </FieldGroup>
@@ -273,9 +284,7 @@ export function CampaignForm({ brands, categories, presets }: Props) {
         <div className="space-y-6">
           {Object.entries(groupedPresets).map(([platform, platformPresets]) => (
             <div key={platform}>
-              <h3 className="mb-3 text-sm font-semibold capitalize text-zinc-300">
-                {platform}
-              </h3>
+              <h3 className="mb-3 text-sm font-semibold capitalize text-zinc-300">{platform}</h3>
               <div className="grid grid-cols-2 gap-3">
                 {platformPresets.map((p) => (
                   <button
@@ -287,22 +296,14 @@ export function CampaignForm({ brands, categories, presets }: Props) {
                         : "border-zinc-700 bg-zinc-800 hover:border-zinc-600"
                     }`}
                   >
-                    <div
-                      className={`flex h-5 w-5 items-center justify-center rounded border ${
-                        form.selectedPresets.includes(p.id)
-                          ? "border-blue-500 bg-blue-600"
-                          : "border-zinc-600"
-                      }`}
-                    >
-                      {form.selectedPresets.includes(p.id) && (
-                        <Check className="h-3 w-3 text-white" />
-                      )}
+                    <div className={`flex h-5 w-5 items-center justify-center rounded border ${
+                      form.selectedPresets.includes(p.id) ? "border-blue-500 bg-blue-600" : "border-zinc-600"
+                    }`}>
+                      {form.selectedPresets.includes(p.id) && <Check className="h-3 w-3 text-white" />}
                     </div>
                     <div>
                       <p className="text-sm font-medium">{p.label}</p>
-                      <p className="text-xs text-zinc-500">
-                        {p.width}x{p.height} ({p.aspectRatio})
-                      </p>
+                      <p className="text-xs text-zinc-500">{p.width}x{p.height} ({p.aspectRatio})</p>
                     </div>
                   </button>
                 ))}
@@ -312,35 +313,113 @@ export function CampaignForm({ brands, categories, presets }: Props) {
         </div>
       )}
 
-      {/* Step 4: Review & Generate */}
+      {/* Step 4: Creative Style Selection */}
       {step === 4 && (
+        <div className="space-y-4">
+          <p className="text-sm text-zinc-400">
+            Choose a visual style for your creatives. Each style has a unique composition, not just different colors.
+          </p>
+
+          <div className="grid gap-4">
+            {families.map((fam) => {
+              const isSelected = form.selectedFamilyId === fam.id;
+              const isRecommended = fam.recommendedCategories.some(
+                (rc) => selectedCategoryName.toLowerCase().includes(rc.toLowerCase()) || rc.toLowerCase().includes(selectedCategoryName.toLowerCase())
+              );
+
+              return (
+                <button
+                  key={fam.id}
+                  onClick={() => update("selectedFamilyId", fam.id)}
+                  className={`relative overflow-hidden rounded-xl border text-left transition-all ${
+                    isSelected
+                      ? "border-blue-500 ring-2 ring-blue-500/30"
+                      : "border-zinc-700 hover:border-zinc-500"
+                  }`}
+                >
+                  {/* Preview gradient strip */}
+                  <div
+                    className="h-20 w-full"
+                    style={{ background: fam.previewBgCss || "linear-gradient(135deg, #1a1a2e, #2563EB)" }}
+                  >
+                    {/* Mini composition hint */}
+                    <div className="flex h-full items-center px-5">
+                      <div className="flex flex-col gap-1">
+                        <div className="h-2 w-24 rounded-full bg-white/60" />
+                        <div className="h-1.5 w-16 rounded-full bg-white/30" />
+                        <div className="mt-1 h-4 w-14 rounded bg-white/20" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-zinc-900 p-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Palette className="h-4 w-4 text-zinc-400" />
+                          <h4 className="text-sm font-semibold">{fam.name}</h4>
+                          {isRecommended && (
+                            <span className="rounded bg-emerald-900/50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-400">
+                              Recommended
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-1 text-xs text-zinc-500">{fam.description}</p>
+                      </div>
+
+                      <div className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                        isSelected ? "border-blue-500 bg-blue-600" : "border-zinc-600"
+                      }`}>
+                        {isSelected && <Check className="h-3 w-3 text-white" />}
+                      </div>
+                    </div>
+
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {fam.supportedRatios.map((r) => (
+                        <span key={r} className="rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-500">{r}</span>
+                      ))}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Step 5: Review & Generate */}
+      {step === 5 && (
         <div className="space-y-6">
           <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
             <h3 className="mb-4 font-semibold">Campaign Summary</h3>
             <dl className="space-y-3">
               <SummaryRow label="Campaign" value={form.name} />
               <SummaryRow label="Product" value={form.productName} />
-              <SummaryRow
-                label="Brand"
-                value={brands.find((b) => b.id === form.brandId)?.name || ""}
-              />
-              <SummaryRow
-                label="Category"
-                value={
-                  categories.find((c) => c.id === form.categoryId)?.name || ""
-                }
-              />
-              <SummaryRow
-                label="Platforms"
-                value={`${form.selectedPresets.length} sizes selected`}
-              />
+              <SummaryRow label="Brand" value={brands.find((b) => b.id === form.brandId)?.name || ""} />
+              <SummaryRow label="Category" value={selectedCategoryName} />
+              <SummaryRow label="Creative Style" value={selectedFamily?.name || "Category Default"} />
+              <SummaryRow label="Platforms" value={`${form.selectedPresets.length} sizes selected`} />
               <SummaryRow label="Copy Variants" value={String(form.copyVariants)} />
-              <SummaryRow
-                label="Total Assets"
-                value={`${form.selectedPresets.length * form.copyVariants} images`}
-              />
+              <SummaryRow label="Total Assets" value={`${form.selectedPresets.length * form.copyVariants} images`} />
             </dl>
           </div>
+
+          {/* Style preview */}
+          {selectedFamily && (
+            <div className="overflow-hidden rounded-xl border border-zinc-800">
+              <div
+                className="h-24 w-full"
+                style={{ background: selectedFamily.previewBgCss || "" }}
+              />
+              <div className="bg-zinc-900 px-4 py-3">
+                <p className="text-xs text-zinc-500">
+                  Style: <span className="text-zinc-300">{selectedFamily.name}</span>
+                  {" — "}
+                  {selectedFamily.description}
+                </p>
+              </div>
+            </div>
+          )}
 
           {error && (
             <div className="rounded-lg border border-red-800 bg-red-950/50 px-4 py-3 text-sm text-red-400">
@@ -360,7 +439,7 @@ export function CampaignForm({ brands, categories, presets }: Props) {
           Back
         </button>
 
-        {step < 4 ? (
+        {step < 5 ? (
           <button
             onClick={() => setStep((s) => s + 1)}
             disabled={!canProceed()}
@@ -405,9 +484,7 @@ function FieldGroup({
     <div>
       <label className="mb-2 block text-sm font-medium text-zinc-300">
         {label}
-        {optional && (
-          <span className="ml-1 text-xs text-zinc-600">optional</span>
-        )}
+        {optional && <span className="ml-1 text-xs text-zinc-600">optional</span>}
       </label>
       {children}
     </div>

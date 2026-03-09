@@ -52,9 +52,23 @@ export async function POST(request: NextRequest) {
         badgeText: input.campaign.badgeText,
         backgroundImageUrl: input.campaign.backgroundImageUrl,
         selectedPresets: input.platforms,
+        selectedFamilyId: input.campaign.selectedFamilyId || null,
         status: "generating",
       },
     });
+
+    // 4a. If a style family is selected, load the default template from it
+    let familyTemplate: Awaited<ReturnType<typeof resolveTemplate>> | null = null;
+    if (input.campaign.selectedFamilyId) {
+      const familyDef = await prisma.templateDefinition.findFirst({
+        where: {
+          familyId: input.campaign.selectedFamilyId,
+          isDefault: true,
+          isActive: true,
+        },
+      });
+      if (familyDef) familyTemplate = familyDef;
+    }
 
     // 5. Generate copy variants (OpenAI with automatic fallback)
     const copyResult = await generateCopyWithFallback(
@@ -107,7 +121,7 @@ export async function POST(request: NextRequest) {
 
     for (const variant of savedVariants) {
       for (const preset of presets) {
-        const template = await resolveTemplate(
+        const template = familyTemplate || await resolveTemplate(
           category.templateMapping,
           preset.id
         );
@@ -200,6 +214,8 @@ export async function POST(request: NextRequest) {
       metadata: {
         brandId: brand.id,
         categoryId: category.id,
+        selectedFamilyId: input.campaign.selectedFamilyId || null,
+        templateUsed: familyTemplate?.templateGroup || "category-default",
         totalAssetsGenerated: assets.length,
         totalCopyVariants: savedVariants.length,
         platformsRendered: presets.map((p) => p.label),
