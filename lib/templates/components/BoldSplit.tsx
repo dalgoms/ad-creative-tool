@@ -77,6 +77,7 @@ export function BoldSplit(props: AdTemplateProps): ReactNode {
     <div style={{ width, height, display: "flex", position: "relative", overflow: "hidden", backgroundColor: "#0A0A14" }}>
       {/* Dark zone */}
       <div style={{
+        display: "flex",
         position: "absolute",
         top: isVert ? 0 : 0,
         left: isVert ? splitPx : 0,
