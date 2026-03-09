@@ -2,6 +2,7 @@ import satori from "satori";
 import sharp from "sharp";
 import { createElement } from "react";
 import { AdTemplate, type AdTemplateProps } from "@/lib/templates/components/AdTemplate";
+import { getTemplateComponent } from "@/lib/templates/registry";
 import { loadDefaultFonts } from "@/lib/utils/font-loader";
 import type { LayoutRules } from "./platform-resolver";
 import type { TemplateStyle } from "@/lib/templates/components/AdTemplate";
@@ -25,6 +26,7 @@ interface RenderInput {
     logoUrl?: string | null;
   };
   templateStyle: TemplateStyle;
+  templateGroup?: string;
 }
 
 interface RenderOutput {
@@ -60,7 +62,11 @@ export async function renderAdAsset(input: RenderInput): Promise<RenderOutput> {
     templateStyle: input.templateStyle,
   };
 
-  const element = createElement(AdTemplate, props);
+  const Component = input.templateGroup
+    ? getTemplateComponent(input.templateGroup)
+    : AdTemplate;
+
+  const element = createElement(Component, props);
 
   const svg = await satori(element, {
     width: input.width,

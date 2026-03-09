@@ -138,6 +138,7 @@ export async function POST(request: NextRequest) {
             logoUrl: brand.logoUrl,
           },
           templateStyle,
+          templateGroup: template.templateGroup,
         });
 
         const fileName = `${preset.platform}_${preset.placement}_${preset.width}x${preset.height}_v${variant.variantIndex}.png`;
