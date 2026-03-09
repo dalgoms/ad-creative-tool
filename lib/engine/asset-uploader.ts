@@ -2,7 +2,10 @@ import { mkdir, writeFile } from "fs/promises";
 import { join } from "path";
 import { createClient } from "@supabase/supabase-js";
 
-const ASSETS_DIR = join(process.cwd(), "public", "generated-assets");
+const isVercel = !!process.env.VERCEL;
+const ASSETS_DIR = isVercel
+  ? join("/tmp", "generated-assets")
+  : join(process.cwd(), "public", "generated-assets");
 const BUCKET = "creative-assets";
 
 function getSupabase() {
@@ -23,6 +26,12 @@ export async function saveAsset(
 ): Promise<string> {
   if (useCloudStorage()) {
     return uploadToSupabase(png, campaignId, fileName);
+  }
+  if (isVercel) {
+    throw new Error(
+      "SUPABASE_SERVICE_ROLE_KEY is required for asset storage on Vercel. " +
+      "Local filesystem is read-only in serverless."
+    );
   }
   return saveLocally(png, campaignId, fileName);
 }

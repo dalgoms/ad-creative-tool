@@ -14,3 +14,4 @@ public/generated-assets/
 
 # Scripts are local dev utilities
 scripts/
+.vercel
