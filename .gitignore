@@ -1,0 +1,16 @@
+node_modules/
+.next/
+.env
+.env.local
+.env.production.local
+*.tsbuildinfo
+next-env.d.ts
+
+# Local dev database
+.pgdata/
+
+# Local generated assets (production uses Supabase Storage)
+public/generated-assets/
+
+# Scripts are local dev utilities
+scripts/

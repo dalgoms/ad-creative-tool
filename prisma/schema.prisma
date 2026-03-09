@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Brand {
+  id             String   @id @default(cuid())
+  name           String
+  primaryColor   String   @default("#2563EB")
+  secondaryColor String   @default("#1E40AF")
+  accentColor    String   @default("#F59E0B")
+  headingFont    String   @default("Inter")
+  bodyFont       String   @default("Inter")
+  logoUrl        String?
+  layoutPrefs    Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  campaigns      Campaign[]
+}
+
+model CategoryRule {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  slug            String   @unique
+  version         Int      @default(1)
+  keywords        Json
+  tone            Json
+  copyRules       Json
+  visualDirection Json
+  templateMapping Json
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  campaigns       Campaign[]
+}
+
+model PlatformPreset {
+  id          String  @id @default(cuid())
+  platform    String
+  placement   String
+  label       String
+  width       Int
+  height      Int
+  aspectRatio String
+  safeZone    Json
+  layoutRules Json
+  fontScale   Float   @default(1.0)
+  isActive    Boolean @default(true)
+  assets      CreativeAsset[]
+}
+
+model TemplateDefinition {
+  id                String   @id @default(cuid())
+  name              String
+  templateGroup     String
+  compatiblePresets String[]
+  layers            Json
+  thumbnail         String?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  assets            CreativeAsset[]
+}
+
+model Campaign {
+  id                 String        @id @default(cuid())
+  name               String
+  brandId            String
+  brand              Brand         @relation(fields: [brandId], references: [id])
+  categoryId         String
+  category           CategoryRule  @relation(fields: [categoryId], references: [id])
+  productName        String
+  productDescription String?
+  targetAudience     String?
+  badgeText          String?
+  backgroundImageUrl String?
+  selectedPresets    String[]
+  status             String        @default("draft")
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  copyVariants       CopyVariant[]
+  assets             CreativeAsset[]
+}
+
+model CopyVariant {
+  id               String          @id @default(cuid())
+  campaignId       String
+  campaign         Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  variantIndex     Int
+  headline         String
+  subcopy          String
+  cta              String
+  keywordsUsed     String[]
+  backgroundPrompt String?
+  createdAt        DateTime        @default(now())
+  assets           CreativeAsset[]
+}
+
+model CreativeAsset {
+  id            String             @id @default(cuid())
+  campaignId    String
+  campaign      Campaign           @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  copyVariantId String
+  copyVariant   CopyVariant        @relation(fields: [copyVariantId], references: [id], onDelete: Cascade)
+  presetId      String
+  preset        PlatformPreset     @relation(fields: [presetId], references: [id])
+  templateId    String
+  template      TemplateDefinition @relation(fields: [templateId], references: [id])
+  fileUrl       String
+  fileSizeKb    Int?
+  format        String             @default("png")
+  status        String             @default("generated")
+  publishedAt   DateTime?
+  createdAt     DateTime           @default(now())
+}
+
+model WebhookConfig {
+  id          String   @id @default(cuid())
+  name        String
+  url         String
+  secret      String?
+  events      String[] // e.g. ["creative.completed", "creative.failed"]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deliveries  WebhookDelivery[]
+}
+
+model WebhookDelivery {
+  id             String        @id @default(cuid())
+  webhookId      String
+  webhook        WebhookConfig @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  event          String
+  payload        Json
+  statusCode     Int?
+  responseBody   String?
+  error          String?
+  deliveredAt    DateTime      @default(now())
+  durationMs     Int?
+}
